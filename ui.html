@@ -1,0 +1,106 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Sample UI</title>
+	<style>
+		:root{--bg:#f6f9fc;--card:#fff;--accent:#2563eb;--muted:#6b7280}
+		body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);margin:0;padding:32px;color:#111}
+		.container{max-width:860px;margin:0 auto}
+		header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+		.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+		.card{background:var(--card);border-radius:12px;box-shadow:0 6px 20px rgba(15,23,42,0.06);padding:20px}
+		.row{display:flex;gap:12px;align-items:center}
+		form{display:grid;grid-template-columns:1fr auto;gap:12px}
+		input[type=text]{padding:10px 12px;border:1px solid #e6edf3;border-radius:8px;font-size:14px}
+		button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+		button.secondary{background:#eef2ff;color:var(--accent);border:1px solid rgba(37,99,235,0.12)}
+		ul.samples{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+		li.sample{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;border:1px solid #f1f5f9;background:linear-gradient(180deg,#fff,#fbfdff)}
+		.muted{color:var(--muted);font-size:13px}
+		footer{margin-top:18px;color:var(--muted);font-size:13px}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<div class="logo">UI</div>
+			<div>
+				<h1 style="margin:0;font-size:20px">Sample UI</h1>
+				<div class="muted">A minimal interactive example</div>
+			</div>
+		</header>
+
+		<section class="card">
+			<div class="row" style="justify-content:space-between;flex-wrap:wrap">
+				<div style="min-width:220px">
+					<strong>Quick add</strong>
+					<div class="muted">Type a name and add it to the list below.</div>
+				</div>
+				<form id="addForm" onsubmit="return false;">
+					<input id="nameInput" type="text" placeholder="Enter name (e.g. Jane Doe)" aria-label="name" />
+					<button id="addBtn">Add</button>
+				</form>
+			</div>
+
+			<ul id="samples" class="samples" aria-live="polite"></ul>
+
+			<footer>
+				<button id="clearBtn" class="secondary">Clear All</button>
+				<span style="margin-left:12px">Items in memory only · No data saved</span>
+			</footer>
+		</section>
+	</div>
+
+	<script>
+		const samplesEl = document.getElementById('samples');
+		const input = document.getElementById('nameInput');
+		const addBtn = document.getElementById('addBtn');
+		const clearBtn = document.getElementById('clearBtn');
+
+		let items = ['Sample item 1','Sample item 2'];
+
+		function render(){
+			samplesEl.innerHTML = '';
+			if(!items.length){
+				const empty = document.createElement('div');
+				empty.className = 'muted';
+				empty.textContent = 'No items yet — add one above.';
+				samplesEl.appendChild(empty);
+				return;
+			}
+			items.forEach((it, i)=>{
+				const li = document.createElement('li');
+				li.className = 'sample';
+				li.innerHTML = `<div>${escapeHtml(it)}</div><div class="muted"> <button data-i="${i}" class="secondary">Remove</button></div>`;
+				samplesEl.appendChild(li);
+			});
+		}
+
+		function escapeHtml(s){return String(s).replace(/[&<>"]+/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+		addBtn.addEventListener('click', ()=>{
+			const v = input.value.trim();
+			if(!v) return input.focus();
+			items.unshift(v);
+			input.value = '';
+			render();
+			input.focus();
+		});
+
+		samplesEl.addEventListener('click', e=>{
+			const btn = e.target.closest('button[data-i]');
+			if(!btn) return;
+			const idx = Number(btn.dataset.i);
+			if(Number.isFinite(idx)) items.splice(idx,1);
+			render();
+		});
+
+		clearBtn.addEventListener('click', ()=>{ items = []; render(); });
+
+		render();
+	</script>
+</body>
+</html>
